@@ -4,6 +4,14 @@ Aplikasi web untuk sistem reservasi ruangan kampus yang digunakan oleh mahasiswa
 
 ---
 
+## 🎨 Desain UI/UX
+
+Desain antarmuka dapat diakses melalui Figma:
+
+🔗 https://www.figma.com/design/Af5Zb4Ohl3D04YZJUOoQ7m/TA_SBD?node-id=0-1&t=4qpYdgM9ni8uy4Hi-1
+
+---
+
 ## 🚀 Cara Menjalankan Project
 
 Ikuti langkah berikut:
