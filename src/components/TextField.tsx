@@ -1,6 +1,7 @@
 import * as React from 'react'
 
 type FieldStatus = 'idle' | 'error' | 'success'
+type FieldVariant = 'outline' | 'filled'
 
 export type TextFieldProps = {
   id: string
@@ -16,12 +17,23 @@ export type TextFieldProps = {
   message?: string
   hint?: string
   leftIcon?: React.ReactNode
+  rightElement?: React.ReactNode
+  variant?: FieldVariant
   required?: boolean
   disabled?: boolean
 }
 
 const baseInput =
-  'h-11 w-full rounded-md border bg-white px-11 pr-3 text-[15px] leading-none text-slate-900 placeholder:text-slate-400 shadow-sm transition focus:outline-none focus:ring-4'
+  'h-11 w-full rounded-md border px-11 pr-3 text-[15px] leading-none text-slate-900 placeholder:text-slate-400 shadow-sm transition focus:outline-none focus:ring-4'
+
+function variantClasses(variant: FieldVariant) {
+  switch (variant) {
+    case 'filled':
+      return 'bg-slate-50 border-slate-300'
+    default:
+      return 'bg-white border-slate-200'
+  }
+}
 
 function statusClasses(status: FieldStatus) {
   switch (status) {
@@ -48,6 +60,8 @@ export default function TextField({
   message,
   hint,
   leftIcon,
+  rightElement,
+  variant = 'outline',
   required,
   disabled,
 }: TextFieldProps) {
@@ -88,12 +102,20 @@ export default function TextField({
           aria-describedby={describedByIds.length ? describedByIds.join(' ') : undefined}
           className={[
             baseInput,
+            variantClasses(variant),
             statusClasses(status),
             disabled ? 'cursor-not-allowed bg-slate-50 text-slate-500' : '',
+            rightElement ? 'pr-11' : '',
           ].join(' ')}
         />
 
-        {status === 'success' ? (
+        {rightElement ? (
+          <div className="absolute inset-y-0 right-0 flex w-11 items-center justify-center">
+            {rightElement}
+          </div>
+        ) : null}
+
+        {status === 'success' && !rightElement ? (
           <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-emerald-600">
             <svg
               viewBox="0 0 20 20"

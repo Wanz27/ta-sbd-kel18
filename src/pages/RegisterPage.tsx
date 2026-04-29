@@ -1,4 +1,5 @@
 import * as React from 'react'
+import { Link } from 'react-router-dom'
 import TextField from '../components/TextField'
 
 type FieldKey = 'fullName' | 'nid' | 'email' | 'password' | 'confirmPassword'
@@ -315,12 +316,12 @@ export default function RegisterPage() {
 
               <p className="pt-5 text-center text-sm text-slate-600">
                 Already have an account?{' '}
-                <a
-                  href="#"
+                <Link
+                  to="/login"
                   className="font-semibold text-sky-700 underline-offset-4 hover:underline focus:outline-none focus:ring-4 focus:ring-sky-600/15"
                 >
                   Login
-                </a>
+                </Link>
               </p>
             </form>
           </div>
