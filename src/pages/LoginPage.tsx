@@ -109,7 +109,15 @@ export default function LoginPage() {
 
     if (canSubmit) {
       localStorage.setItem('userName', values.identifier || 'User Baru')
-      navigate('/dashboard')
+      // Simulasi: jika identifier mengandung 'admin', anggap admin
+      const isAdmin = values.identifier.toLowerCase().includes('admin')
+      if (isAdmin) {
+        localStorage.setItem('role', 'admin')
+        navigate('/admin-dashboard')
+      } else {
+        localStorage.setItem('role', 'user')
+        navigate('/user-dashboard')
+      }
     }
   }
 
