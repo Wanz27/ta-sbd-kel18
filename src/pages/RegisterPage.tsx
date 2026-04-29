@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom' // 1. Tambahan import navigate
 import TextField from '../components/TextField'
 
 type FieldKey = 'fullName' | 'nid' | 'email' | 'password' | 'confirmPassword'
@@ -101,6 +101,8 @@ function FeatureCard({
 }
 
 export default function RegisterPage() {
+  const navigate = useNavigate() // 2. Deklarasi navigate
+
   const [values, setValues] = React.useState<FormState>(initialState)
   const [touched, setTouched] = React.useState<TouchedState>({
     fullName: false,
@@ -122,7 +124,7 @@ export default function RegisterPage() {
     setValues((v) => ({ ...v, [key]: next }))
   }
 
-  function onSubmit(e: React.FormEvent) {
+function onSubmit(e: React.FormEvent) {
     e.preventDefault()
     setSubmitted(true)
     setTouched({
@@ -132,6 +134,15 @@ export default function RegisterPage() {
       password: true,
       confirmPassword: true,
     })
+
+    if (canSubmit) {
+      // 1. Simpan nama ke memori browser sebelum pindah halaman
+      localStorage.setItem('userName', values.fullName)
+      
+      setTimeout(() => {
+        navigate('/dashboard')
+      }, 1500)
+    }
   }
 
   return (
@@ -316,12 +327,12 @@ export default function RegisterPage() {
 
               <p className="pt-5 text-center text-sm text-slate-600">
                 Already have an account?{' '}
-                <Link
-                  to="/login"
+                <a
+                  href="#"
                   className="font-semibold text-sky-700 underline-offset-4 hover:underline focus:outline-none focus:ring-4 focus:ring-sky-600/15"
                 >
                   Login
-                </Link>
+                </a>
               </p>
             </form>
           </div>
@@ -353,12 +364,11 @@ export default function RegisterPage() {
 
             <div className="mt-6 max-w-lg">
               <h2 className="text-[40px] font-semibold leading-[1.1] tracking-tight text-white">
-                Smart room reservation for your campus.
+                Reservasi ruang kampus dengan TEKSPACE.
               </h2>
               <p className="mt-4 max-w-md text-[15px] leading-6 text-white/75">
-                TEKSPACE menyediakan sistem reservasi ruangan berbasis web dengan
-                informasi ketersediaan real-time untuk mendukung aktivitas akademik
-                yang lebih efisien dan terstruktur.
+                Visualisasikan jadwal, ajukan peminjaman, dan pantau penggunaan
+                ruang secara terpusat untuk mendukung kegiatan akademik.
               </p>
             </div>
 
@@ -407,4 +417,3 @@ export default function RegisterPage() {
     </div>
   )
 }
-
