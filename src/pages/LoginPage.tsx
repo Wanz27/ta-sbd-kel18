@@ -112,6 +112,9 @@ export default function LoginPage() {
           <div className="flex min-h-dvh items-center justify-center px-6 py-16">
             <div className="w-full max-w-[360px]">
               <div className="mb-8 space-y-2 text-slate-600">
+                <h1 className="text-4xl font-semibold tracking-tight text-slate-900 sm:text-[44px] sm:leading-[1.05]">
+                  Login
+                </h1>
                 <p className="text-sm">Building Room Reservations</p>
                 <p className="text-sm">Access your workspace environment</p>
               </div>
