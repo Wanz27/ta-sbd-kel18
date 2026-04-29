@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { useNavigate } from 'react-router-dom' // 1. Tambahan import navigate
+import { Link, useNavigate } from 'react-router-dom'
 import TextField from '../components/TextField'
 
 type FieldKey = 'fullName' | 'nid' | 'email' | 'password' | 'confirmPassword'
@@ -327,12 +327,12 @@ function onSubmit(e: React.FormEvent) {
 
               <p className="pt-5 text-center text-sm text-slate-600">
                 Already have an account?{' '}
-                <a
-                  href="#"
+                <Link
+                  to="/login"
                   className="font-semibold text-sky-700 underline-offset-4 hover:underline focus:outline-none focus:ring-4 focus:ring-sky-600/15"
                 >
                   Login
-                </a>
+                </Link>
               </p>
             </form>
           </div>

@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import TextField from '../components/TextField'
 
 type LoginKey = 'identifier' | 'password'
@@ -81,6 +81,7 @@ export default function LoginPage() {
   const [submitted, setSubmitted] = React.useState(false)
   const [showPassword, setShowPassword] = React.useState(false)
   const [rememberMe, setRememberMe] = React.useState(false)
+  const navigate = useNavigate()
 
   const errors = React.useMemo(() => validate(values), [values])
   const canSubmit = Object.keys(errors).length === 0
@@ -98,6 +99,11 @@ export default function LoginPage() {
     e.preventDefault()
     setSubmitted(true)
     setTouched({ identifier: true, password: true })
+
+    if (canSubmit) {
+      localStorage.setItem('userName', values.identifier || 'User Baru')
+      navigate('/dashboard')
+    }
   }
 
   return (
@@ -219,12 +225,12 @@ export default function LoginPage() {
                     Remember me
                   </label>
 
-                  <a
-                    href="#"
+                  <button
+                    type="button"
                     className="text-sm font-medium text-sky-800 underline-offset-4 hover:underline focus:outline-none focus:ring-4 focus:ring-sky-600/15"
                   >
                     Forgot Password?
-                  </a>
+                  </button>
                 </div>
 
                 {submitted && !canSubmit ? (
