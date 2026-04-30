@@ -1,4 +1,5 @@
 import DashboardLayout from '../layout/DashboardLayout';
+import { Link } from 'react-router-dom';
 
 export default function AdminDashboard() {
 	const fullName = localStorage.getItem('userName') || 'System Admin';
@@ -82,7 +83,7 @@ export default function AdminDashboard() {
 								<div className="bg-blue-50 text-sky-700 rounded px-2 py-1">Dev Sprint<br/>11:00 - 12:00</div>
 							</div>
 						</div>
-						<div className="mt-4 text-right">
+						<div className="mt-4 text-center">
 							<button className="text-sky-700 text-xs font-medium hover:underline">View All Rooms Schedule &rarr;</button>
 						</div>
 					</div>
@@ -126,8 +127,8 @@ export default function AdminDashboard() {
 								</div>
 							</li>
 						</ul>
-						<div className="mt-4 text-right">
-							<button className="text-sky-700 text-xs font-medium hover:underline">View Full Audit Log &rarr;</button>
+						<div className="mt-4 text-center">
+							<Link to="/activity-feed" className="text-sky-700 text-xs font-medium hover:underline">View Full Audit Log &rarr;</Link>
 						</div>
 					</div>
 				</div>

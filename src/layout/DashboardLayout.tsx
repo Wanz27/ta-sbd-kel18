@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { useNavigate } from 'react-router-dom'; // <-- Tambahan import ini
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Search, Bell, HelpCircle, LogOut, LayoutDashboard, Calendar, Archive, History, BookOpen, Bookmark } from 'lucide-react';
 
 interface LayoutProps {
@@ -10,7 +10,8 @@ interface LayoutProps {
 }
 
 export default function DashboardLayout({ children, role, userName, userRole }: LayoutProps) {
-  const navigate = useNavigate(); // <-- Inisialisasi fungsi navigasi
+  const navigate = useNavigate();
+  const location = useLocation();
 
   // Fungsi untuk menangani aksi logout
   const handleLogout = () => {
@@ -21,17 +22,17 @@ export default function DashboardLayout({ children, role, userName, userRole }: 
   };
 
   const adminMenu = [
-    { name: 'Dashboard', icon: LayoutDashboard, active: true },
-    { name: 'Room Management', icon: Calendar, active: false },
-    { name: 'Bookings', icon: BookOpen, active: false },
-    { name: 'Archived Rooms', icon: Archive, active: false },
-    { name: 'Booking History', icon: History, active: false },
+    { name: 'Dashboard', icon: LayoutDashboard, path: '/admin-dashboard' },
+    { name: 'Room Management', icon: Calendar, path: '/room-management' },
+    { name: 'Bookings', icon: BookOpen, path: '/bookings' },
+    { name: 'Archived Rooms', icon: Archive, path: '/archived-rooms' },
+    { name: 'Booking History', icon: History, path: '/booking-history' },
   ];
 
   const userMenu = [
-    { name: 'Dashboard', icon: LayoutDashboard, active: true },
-    { name: 'Room Catalog', icon: BookOpen, active: false },
-    { name: 'My Bookings', icon: Bookmark, active: false },
+    { name: 'Dashboard', icon: LayoutDashboard, path: '/user-dashboard' },
+    { name: 'Room Catalog', icon: BookOpen, path: '/room-catalog' },
+    { name: 'My Bookings', icon: Bookmark, path: '/my-bookings' },
   ];
 
   const menu = role === 'admin' ? adminMenu : userMenu;
@@ -53,18 +54,21 @@ export default function DashboardLayout({ children, role, userName, userRole }: 
         </div>
 
         <nav className="flex-1 mt-4">
-          {menu.map((item) => (
-            <a
-              key={item.name}
-              href="#"
-              className={`flex items-center gap-3 px-6 py-3 hover:bg-slate-800 transition-colors ${
-                item.active ? 'bg-slate-800 border-l-4 border-[#0088FF] text-white' : ''
-              }`}
-            >
-              <item.icon size={20} className={item.active ? 'text-[#0088FF]' : ''} />
-              {item.name}
-            </a>
-          ))}
+          {menu.map((item) => {
+            const isActive = location.pathname === item.path;
+            return (
+              <a
+                key={item.name}
+                href={item.path}
+                className={`flex items-center gap-3 px-6 py-3 hover:bg-slate-800 transition-colors ${
+                  isActive ? 'bg-slate-800 border-l-4 border-[#0088FF] text-white' : ''
+                }`}
+              >
+                <item.icon size={20} className={isActive ? 'text-[#0088FF]' : ''} />
+                {item.name}
+              </a>
+            );
+          })}
         </nav>
 
         <div className="p-4">
