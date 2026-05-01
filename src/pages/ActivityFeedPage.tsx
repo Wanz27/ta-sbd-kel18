@@ -8,14 +8,119 @@ import {
   Clock, 
   Users, 
   ArrowRight,
-  Check
+  Check,
+  CheckCheck
 } from 'lucide-react';
 
+// --- DEFINISI TIPE DATA ---
 type ActivityTab = 'all' | 'approvals' | 'canceled' | 'returned';
+type ActivityType = 'approvals' | 'canceled' | 'rescheduled' | 'returned';
+
+interface ActivityItem {
+  id: string;
+  type: ActivityType;
+  iconType: ActivityType;
+  title: string;
+  time: string;
+  actor: string;
+  role?: string;
+  actionText: string;
+  isRead: boolean;
+  timeRange?: string;
+  peopleCount?: string;
+  badgeLabel?: string;
+  badgeStyle?: string;
+  rescheduleFrom?: string;
+  rescheduleTo?: string;
+}
+
+// --- DATA DUMMY AWAL ---
+const initialActivities: ActivityItem[] = [
+  {
+    id: '1',
+    type: 'approvals',
+    iconType: 'approvals',
+    title: 'New Booking: Room 302',
+    time: '2 mins ago',
+    actor: 'Sarah Jenkins',
+    role: 'Senior Analyst',
+    actionText: "reserved the Executive Suite for a 'Quarterly Strategy Session'.",
+    timeRange: '14:00 - 16:30',
+    peopleCount: '12 People',
+    isRead: false,
+  },
+  {
+    id: '2',
+    type: 'canceled',
+    iconType: 'canceled',
+    title: 'Canceled: Studio B',
+    time: '18 mins ago',
+    actor: 'Mark Thompson',
+    role: 'Creative Director',
+    actionText: "released the reservation due to schedule conflict.",
+    badgeLabel: 'HIGH PRIORITY RELEASE',
+    badgeStyle: 'bg-red-50 text-red-700 border-red-100',
+    isRead: false,
+  },
+  {
+    id: '3',
+    type: 'rescheduled', // Rescheduled akan muncul di 'All Activity'
+    iconType: 'rescheduled',
+    title: 'Rescheduled: Tech Hub',
+    time: '1 hour ago',
+    actor: 'Development Team A',
+    actionText: "moved 'Sprint Planning' from Tuesday 10:00 to Wednesday 09:00.",
+    rescheduleFrom: 'Aug 14, 10:00',
+    rescheduleTo: 'Aug 15, 09:00',
+    isRead: false,
+  },
+  {
+    id: '4',
+    type: 'returned',
+    iconType: 'returned',
+    title: 'Returned Early: Executive Suite 302',
+    time: '3 hours ago',
+    actor: 'Sarah Jenkins',
+    actionText: "ended their booking 30 minutes ahead of schedule. Room is now available.",
+    badgeLabel: 'RETURNED EARLY',
+    badgeStyle: 'bg-indigo-50 text-indigo-700 border-indigo-100',
+    isRead: false,
+  }
+];
 
 export default function ActivityFeedPage() {
   const fullName = localStorage.getItem('userName') || 'Alex Rivera';
+  
+  // --- STATE MANAGEMENT ---
   const [activeTab, setActiveTab] = React.useState<ActivityTab>('all');
+  const [activities, setActivities] = React.useState<ActivityItem[]>(initialActivities);
+
+  // Mengecek apakah masih ada notifikasi yang belum dibaca
+  const hasUnread = activities.some(act => !act.isRead);
+
+  // --- LOGIKA FILTER ---
+  const filteredActivities = activities.filter((act) => {
+    if (activeTab === 'all') return true;
+    if (activeTab === 'approvals') return act.type === 'approvals';
+    if (activeTab === 'canceled') return act.type === 'canceled';
+    if (activeTab === 'returned') return act.type === 'returned';
+    return false;
+  });
+
+  // --- FUNGSI MARK ALL AS READ ---
+  const handleMarkAllAsRead = () => {
+    setActivities(activities.map(act => ({ ...act, isRead: true })));
+  };
+
+  // --- HELPER UNTUK IKON BERDASARKAN TIPE ---
+  const getIconData = (type: ActivityType) => {
+    switch(type) {
+      case 'approvals': return { icon: <CalendarPlus className="w-6 h-6 text-sky-600" />, bg: 'bg-sky-50 border-sky-100' };
+      case 'canceled': return { icon: <XCircle className="w-6 h-6 text-rose-600" />, bg: 'bg-rose-50 border-rose-100' };
+      case 'rescheduled': return { icon: <RotateCw className="w-6 h-6 text-amber-600" />, bg: 'bg-amber-50 border-amber-100' };
+      case 'returned': return { icon: <ArrowLeftSquare className="w-6 h-6 text-indigo-600" />, bg: 'bg-indigo-50 border-indigo-100' };
+    }
+  };
 
   return (
     <DashboardLayout role="admin" userName={fullName} userRole="System Admin">
@@ -27,148 +132,138 @@ export default function ActivityFeedPage() {
             <h1 className="text-[32px] font-bold text-slate-900 mb-2">Activity Feed</h1>
             <p className="text-slate-500 text-[15px]">Real-time logs of all space operations and system events.</p>
           </div>
-          <button className="flex items-center gap-2 px-4 py-2 bg-white border border-[#0088FF] text-[#0088FF] font-medium rounded-md hover:bg-blue-50 transition-colors text-sm shadow-sm">
-            <Check size={16} />
-            Mark all as read
+          
+          {/* Tombol Mark as Read Terhubung ke State */}
+          <button 
+            onClick={handleMarkAllAsRead}
+            disabled={!hasUnread}
+            className={`flex items-center gap-2 px-4 py-2 font-medium rounded-md transition-all text-sm shadow-sm border ${
+              hasUnread 
+                ? 'bg-blue-50 border-[#0088FF] text-[#0088FF] hover:bg-blue-100' 
+                : 'bg-slate-50 border-slate-200 text-slate-400 cursor-not-allowed'
+            }`}
+          >
+            {hasUnread ? <Check size={16} /> : <CheckCheck size={16} />}
+            {hasUnread ? 'Mark all as read' : 'All caught up!'}
           </button>
         </div>
 
         {/* TABS */}
         <div className="flex gap-8 border-b border-slate-200 mb-8 px-2">
-          <button
-            onClick={() => setActiveTab('all')}
-            className={`pb-4 text-[15px] font-medium transition-colors relative ${
-              activeTab === 'all' ? 'text-[#0088FF]' : 'text-slate-500 hover:text-slate-800'
-            }`}
-          >
-            All Activity
-            {activeTab === 'all' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#0088FF]" />}
-          </button>
-          <button
-            onClick={() => setActiveTab('approvals')}
-            className={`pb-4 text-[15px] font-medium transition-colors relative ${
-              activeTab === 'approvals' ? 'text-[#0088FF]' : 'text-slate-500 hover:text-slate-800'
-            }`}
-          >
-            Approvals
-            {activeTab === 'approvals' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#0088FF]" />}
-          </button>
-          <button
-            onClick={() => setActiveTab('canceled')}
-            className={`pb-4 text-[15px] font-medium transition-colors relative ${
-              activeTab === 'canceled' ? 'text-[#0088FF]' : 'text-slate-500 hover:text-slate-800'
-            }`}
-          >
-            Canceled
-            {activeTab === 'canceled' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#0088FF]" />}
-          </button>
-          <button
-            onClick={() => setActiveTab('returned')}
-            className={`pb-4 text-[15px] font-medium transition-colors relative ${
-              activeTab === 'returned' ? 'text-[#0088FF]' : 'text-slate-500 hover:text-slate-800'
-            }`}
-          >
-            Returned Early
-            {activeTab === 'returned' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#0088FF]" />}
-          </button>
+          {(['all', 'approvals', 'canceled', 'returned'] as ActivityTab[]).map((tab) => {
+            const labels = {
+              all: 'All Activity',
+              approvals: 'Approvals',
+              canceled: 'Canceled',
+              returned: 'Returned Early'
+            };
+            return (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`pb-4 text-[15px] font-medium transition-colors relative ${
+                  activeTab === tab ? 'text-[#0088FF]' : 'text-slate-500 hover:text-slate-800'
+                }`}
+              >
+                {labels[tab]}
+                {activeTab === tab && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#0088FF]" />}
+              </button>
+            );
+          })}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           
-          {/* LEFT COLUMN: Activity List */}
+          {/* LEFT COLUMN: Activity List Terfilter */}
           <div className="lg:col-span-2 flex flex-col gap-5">
-            
-            {/* ITEM 1 */}
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-100 flex gap-5 hover:border-blue-200 transition-colors">
-              <div className="w-12 h-12 rounded-xl bg-sky-50 flex items-center justify-center flex-shrink-0 border border-sky-100">
-                <CalendarPlus className="w-6 h-6 text-sky-600" />
-              </div>
-              <div className="flex-1">
-                <div className="flex justify-between items-start mb-1">
-                  <h3 className="text-[17px] font-semibold text-slate-900">New Booking: Room 302</h3>
-                  <span className="text-sm text-slate-500">2 mins ago</span>
-                </div>
-                <p className="text-[15px] text-slate-600 mb-4 leading-relaxed">
-                  <span className="font-bold text-slate-800">Sarah Jenkins</span> (Senior Analyst) reserved the Executive Suite for a 'Quarterly Strategy Session'.
-                </p>
-                <div className="flex gap-4">
-                  <div className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 text-slate-600 rounded-md text-sm border border-slate-200">
-                    <Clock size={14} className="text-slate-400" /> 14:00 - 16:30
+            {filteredActivities.length > 0 ? (
+              filteredActivities.map((act) => {
+                const { icon, bg } = getIconData(act.iconType);
+                
+                return (
+                  <div 
+                    key={act.id} 
+                    className={`rounded-xl p-6 shadow-sm border flex gap-5 transition-all relative ${
+                      act.isRead 
+                        ? 'bg-white border-slate-100' 
+                        : 'bg-[#F4FAFF] border-blue-200' // Tampilan sedikit berbeda jika unread
+                    }`}
+                  >
+                    {/* Unread Indicator Dot */}
+                    {!act.isRead && (
+                      <div className="absolute top-6 right-6 w-2.5 h-2.5 bg-[#0088FF] rounded-full shadow-[0_0_8px_rgba(0,136,255,0.4)]"></div>
+                    )}
+
+                    {/* Icon */}
+                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 border ${bg}`}>
+                      {icon}
+                    </div>
+
+                    {/* Content */}
+                    <div className="flex-1 pr-6">
+                      <div className="flex justify-between items-start mb-1">
+                        <h3 className={`text-[17px] font-semibold ${act.isRead ? 'text-slate-800' : 'text-slate-900'}`}>
+                          {act.title}
+                        </h3>
+                        <span className={`text-sm ${act.isRead ? 'text-slate-400' : 'text-[#0088FF] font-medium'}`}>
+                          {act.time}
+                        </span>
+                      </div>
+                      
+                      <p className="text-[15px] text-slate-600 mb-4 leading-relaxed">
+                        <span className="font-bold text-slate-800">{act.actor}</span> {act.role && `(${act.role})`} {act.actionText}
+                      </p>
+
+                      {/* Spesifik Konten Tambahan Berdasarkan Tipe */}
+                      {act.timeRange && act.peopleCount && (
+                        <div className="flex gap-4">
+                          <div className="flex items-center gap-1.5 px-3 py-1.5 bg-white text-slate-600 rounded-md text-sm border border-slate-200 shadow-sm">
+                            <Clock size={14} className="text-slate-400" /> {act.timeRange}
+                          </div>
+                          <div className="flex items-center gap-1.5 px-3 py-1.5 bg-white text-slate-600 rounded-md text-sm border border-slate-200 shadow-sm">
+                            <Users size={14} className="text-slate-400" /> {act.peopleCount}
+                          </div>
+                        </div>
+                      )}
+
+                      {act.badgeLabel && (
+                        <span className={`inline-block px-2.5 py-1 text-[11px] font-bold rounded uppercase tracking-wide border ${act.badgeStyle}`}>
+                          {act.badgeLabel}
+                        </span>
+                      )}
+
+                      {act.rescheduleFrom && act.rescheduleTo && (
+                        <div className="flex items-center gap-3 text-sm font-medium bg-white border border-slate-200 w-fit px-3 py-2 rounded-lg shadow-sm">
+                          <span className="text-slate-400 line-through">{act.rescheduleFrom}</span>
+                          <ArrowRight size={16} className="text-slate-400" />
+                          <span className="text-[#0088FF]">{act.rescheduleTo}</span>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                  <div className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 text-slate-600 rounded-md text-sm border border-slate-200">
-                    <Users size={14} className="text-slate-400" /> 12 People
-                  </div>
+                );
+              })
+            ) : (
+              // Empty State jika Tab kosong
+              <div className="bg-white border border-slate-200 rounded-xl p-10 flex flex-col items-center justify-center text-center">
+                <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4 border border-slate-100">
+                  <Clock className="w-8 h-8 text-slate-300" />
                 </div>
+                <h3 className="font-bold text-slate-800 text-lg mb-1">No activities found</h3>
+                <p className="text-sm text-slate-500">There are no records matching this category.</p>
               </div>
-            </div>
+            )}
 
-            {/* ITEM 2 */}
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-100 flex gap-5 hover:border-rose-200 transition-colors">
-              <div className="w-12 h-12 rounded-xl bg-rose-50 flex items-center justify-center flex-shrink-0 border border-rose-100">
-                <XCircle className="w-6 h-6 text-rose-600" />
+            {filteredActivities.length > 0 && (
+              <div className="mt-4 text-center pb-8">
+                <button className="text-[#0088FF] font-medium hover:underline text-[15px]">
+                  Load older activities...
+                </button>
               </div>
-              <div className="flex-1">
-                <div className="flex justify-between items-start mb-1">
-                  <h3 className="text-[17px] font-semibold text-slate-900">Canceled: Studio B</h3>
-                  <span className="text-sm text-slate-500">18 mins ago</span>
-                </div>
-                <p className="text-[15px] text-slate-600 mb-4 leading-relaxed">
-                  <span className="font-bold text-slate-800">Mark Thompson</span> (Creative Director) released the reservation due to schedule conflict.
-                </p>
-                <span className="inline-block px-2.5 py-1 bg-red-50 text-red-700 text-[11px] font-bold rounded uppercase tracking-wide border border-red-100">
-                  HIGH PRIORITY RELEASE
-                </span>
-              </div>
-            </div>
-
-            {/* ITEM 3 */}
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-100 flex gap-5 hover:border-amber-200 transition-colors">
-              <div className="w-12 h-12 rounded-xl bg-amber-50 flex items-center justify-center flex-shrink-0 border border-amber-100">
-                <RotateCw className="w-6 h-6 text-amber-600" />
-              </div>
-              <div className="flex-1">
-                <div className="flex justify-between items-start mb-1">
-                  <h3 className="text-[17px] font-semibold text-slate-900">Rescheduled: Tech Hub</h3>
-                  <span className="text-sm text-slate-500">1 hour ago</span>
-                </div>
-                <p className="text-[15px] text-slate-600 mb-3 leading-relaxed">
-                  <span className="font-bold text-slate-800">Development Team A</span> moved 'Sprint Planning' from Tuesday 10:00 to Wednesday 09:00.
-                </p>
-                <div className="flex items-center gap-3 text-sm font-medium">
-                  <span className="text-slate-400 line-through">Aug 14, 10:00</span>
-                  <ArrowRight size={16} className="text-slate-400" />
-                  <span className="text-[#0088FF]">Aug 15, 09:00</span>
-                </div>
-              </div>
-            </div>
-
-            {/* ITEM 4 */}
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-100 flex gap-5 hover:border-indigo-200 transition-colors">
-              <div className="w-12 h-12 rounded-xl bg-indigo-50 flex items-center justify-center flex-shrink-0 border border-indigo-100">
-                <ArrowLeftSquare className="w-6 h-6 text-indigo-600" />
-              </div>
-              <div className="flex-1">
-                <div className="flex justify-between items-start mb-1">
-                  <h3 className="text-[17px] font-semibold text-slate-900">Returned Early: Executive Suite 302</h3>
-                  <span className="text-sm text-slate-500">3 hours ago</span>
-                </div>
-                <p className="text-[15px] text-slate-600 mb-4 leading-relaxed">
-                  <span className="font-bold text-slate-800">Sarah Jenkins</span> ended their booking 30 minutes ahead of schedule. Room is now available.
-                </p>
-                <span className="inline-block px-2.5 py-1 bg-indigo-50 text-indigo-700 text-[11px] font-bold rounded uppercase tracking-wide border border-indigo-100">
-                  RETURNED EARLY
-                </span>
-              </div>
-            </div>
-
-            <div className="mt-4 text-center pb-8">
-              <button className="text-[#0088FF] font-medium hover:underline text-[15px]">
-                Load older activities...
-              </button>
-            </div>
+            )}
           </div>
 
-          {/* RIGHT COLUMN: Widgets */}
+          {/* RIGHT COLUMN: Widgets (Tetap Sesuai Desain) */}
           <div className="flex flex-col gap-6">
             
             {/* Widget: ACTIVITY SUMMARY */}
