@@ -9,6 +9,7 @@ import RoomManagementPage from './pages/RoomManagementPage'
 import HelpCenterPage from './pages/HelpCenter'
 import AdminRoute from './routes/AdminRoute'
 import ProtectedRoute from './routes/ProtectedRoute'
+import UserActivityPage from './pages/UserActivityPage'
 
 function UserOnlyOutlet(): React.ReactElement {
   const role = localStorage.getItem('role')
@@ -28,6 +29,7 @@ export default function App() {
         {/* USER only */}
         <Route element={<UserOnlyOutlet />}>
           <Route path="/user-dashboard" element={<UserDashboard />} />
+          <Route path="/user-activity" element={<UserActivityPage />} />
         </Route>
 
         {/* Admin-only routes */}
@@ -40,7 +42,6 @@ export default function App() {
         {/* shared protected (opsional) */}
         <Route path="/help-center" element={<HelpCenterPage />} />
       </Route>
-
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   )
