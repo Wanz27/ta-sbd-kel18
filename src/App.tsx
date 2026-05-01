@@ -1,12 +1,11 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
-
 import AdminDashboard from './pages/AdminDashboard'
 import ActivityFeedPage from './pages/ActivityFeedPage'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
 import UserDashboard from './pages/UserDashboard'
 import RoomManagementPage from './pages/RoomManagementPage'
-import HelpCenter from './pages/HelpCenter'
+import HelpCenterPage from './pages/HelpCenter'
 
 export default function App() {
   return (
@@ -18,7 +17,7 @@ export default function App() {
       <Route path="/room-management" element={<RoomManagementPage />} />
       <Route path="/activity-feed" element={<ActivityFeedPage />} />
       <Route path="/user-dashboard" element={<UserDashboard />} />
-      <Route path="/help-center" element={<HelpCenter />} />
+      <Route path="/help-center" element={<HelpCenterPage />} />
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   )
