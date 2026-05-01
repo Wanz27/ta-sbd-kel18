@@ -101,7 +101,7 @@ function FeatureCard({
 }
 
 export default function RegisterPage() {
-  const navigate = useNavigate() // 2. Deklarasi navigate
+  const navigate = useNavigate()
 
   const [values, setValues] = React.useState<FormState>(initialState)
   const [touched, setTouched] = React.useState<TouchedState>({
@@ -136,7 +136,6 @@ function onSubmit(e: React.FormEvent) {
     })
 
     if (canSubmit) {
-      // 1. Simpan nama ke memori browser sebelum pindah halaman
       localStorage.setItem('userName', values.fullName)
       
       setTimeout(() => {
