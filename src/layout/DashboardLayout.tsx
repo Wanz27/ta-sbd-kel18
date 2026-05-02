@@ -53,7 +53,7 @@ export default function DashboardLayout({ children, role: propRole, userName: pr
           <div>
             <h1 className="text-white font-bold tracking-wider uppercase text-lg">Tekspace</h1>
             <p className="text-xs text-slate-400">
-              {activeRole === 'admin' ? 'Corporate HQ' : 'Corporate Portal'}
+              {activeRole === 'admin' ? 'Smart Space' : 'Corporate Portal'}
             </p>
           </div>
         </div>
