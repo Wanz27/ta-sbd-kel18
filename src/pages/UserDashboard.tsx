@@ -8,7 +8,7 @@ export default function UserDashboard() {
   const navigate = useNavigate();
 
   return (
-    <DashboardLayout>
+    <DashboardLayout role="user" userName={fullName ?? 'User'}>
       {/* Welcome Banner */}
       <div className="bg-white rounded-xl p-8 border border-slate-200 mb-8 flex justify-between items-center bg-gradient-to-r from-white to-blue-50">
         <div>

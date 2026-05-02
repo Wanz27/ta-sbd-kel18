@@ -1,17 +1,22 @@
 import { useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import DashboardLayout from '../layout/DashboardLayout';
 import { BookOpen, HelpCircle, MessageSquare, Mail, ChevronDown } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 export default function HelpCenter() {
-  const { fullName: authName } = useAuth();
-  const displayName = authName ?? 'Student';
+  const auth = useAuth() as any; 
+  const location = useLocation();
+  
+  const displayName = auth?.fullName || localStorage.getItem('userName') || 'Student';
+  
+  // FIX: Ambil role dari state navigasi router, kalau kosong cek context auth supabase, baru fallback terakhir ke localStorage
+  const authRole = auth?.role || auth?.user?.role || auth?.user?.user_metadata?.role;
+  const role = location.state?.currentRole || authRole || (localStorage.getItem('role') as 'admin' | 'user') || 'user';
 
-  // State to track which FAQ is open (null means all are closed)
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
   const toggleFaq = (index: number) => {
-    // Toggle the clicked FAQ open/close
     setOpenFaq(openFaq === index ? null : index);
   };
 
@@ -58,8 +63,7 @@ export default function HelpCenter() {
   ];
 
   return (
-    <DashboardLayout>
-      {/* Header Section */}
+    <DashboardLayout role={role} userName={displayName}>
       <div className="mb-8">
         <h2 className="text-2xl font-bold text-slate-800 mb-2">Help & Guide Center</h2>
         <p className="text-slate-500">
@@ -68,7 +72,6 @@ export default function HelpCenter() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-        {/* Left Column: Booking Guide */}
         <div className="lg:col-span-2 bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
           <div className="flex items-center gap-3 mb-6">
             <BookOpen className="text-[#0088FF]" size={24} />
@@ -88,9 +91,7 @@ export default function HelpCenter() {
           </div>
         </div>
 
-        {/* Right Column: Support & Operational Hours */}
         <div className="flex flex-col gap-6">
-          {/* Support Box */}
           <div className="bg-[#0077B6] rounded-xl p-6 text-white shadow-sm">
             <h3 className="text-lg font-bold mb-3">Need More Help?</h3>
             <p className="text-white/80 text-sm mb-6 leading-relaxed">
@@ -98,11 +99,9 @@ export default function HelpCenter() {
             </p>
             
             <div className="space-y-3">
-              {/* WhatsApp Button */}
               <button 
                 onClick={() => {
                   const message = `Hello TEKSPACE Admin, I am ${displayName}. I need assistance regarding a campus room reservation.`;
-                  // Replace the number below with the actual admin WhatsApp number (use international format without '+', e.g., 62...)
                   window.open(`https://wa.me/6287822408980?text=${encodeURIComponent(message)}`, '_blank');
                 }}
                 className="w-full bg-white/20 hover:bg-white/30 transition border border-white/30 rounded-lg p-3 flex items-center gap-4 text-left"
@@ -114,7 +113,6 @@ export default function HelpCenter() {
                 </div>
               </button>
               
-              {/* Email Button */}
               <button 
                 onClick={() => {
                   const subject = `[TEKSPACE Support] Need Assistance - ${displayName}`;
@@ -132,7 +130,6 @@ export default function HelpCenter() {
             </div>
           </div>
 
-          {/* Operational Hours */}
           <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
             <h3 className="text-xs font-bold text-slate-400 tracking-wider uppercase mb-4">
               Operational Hours
@@ -149,7 +146,6 @@ export default function HelpCenter() {
         </div>
       </div>
 
-      {/* Bottom Section: FAQ */}
       <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm mb-8">
         <div className="flex items-center gap-3 mb-6">
           <HelpCircle className="text-[#0088FF]" size={24} />

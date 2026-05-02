@@ -1,8 +1,10 @@
 import DashboardLayout from '../layout/DashboardLayout';
 
 export default function ArchivedRoomsPage() {
+  const fullName = localStorage.getItem('userName') || 'System Admin';
+
   return (
-    <DashboardLayout>
+    <DashboardLayout role="admin" userName={fullName}>
       <div className="p-8">
         <h1 className="text-2xl font-bold text-slate-800 mb-2">Archived Rooms</h1>
         <p className="text-slate-500 mb-8">Daftar ruangan yang telah diarsipkan.</p>

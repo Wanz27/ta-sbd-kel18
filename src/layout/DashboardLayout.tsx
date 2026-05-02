@@ -2,31 +2,28 @@ import type { ReactNode } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { 
   Search, Bell, HelpCircle, LogOut, LayoutDashboard, 
-  Calendar, Archive, History, BookOpen, Bookmark, Building2, ClipboardList
+  Archive, History, BookOpen, Bookmark, Building2, ClipboardList
 } from 'lucide-react';
-
-import { useAuth } from '../contexts/AuthContext';
 
 interface LayoutProps {
   children: ReactNode;
+  role?: 'admin' | 'user'; 
+  userName?: string;       
 }
 
-export default function DashboardLayout({ children }: LayoutProps) {
+export default function DashboardLayout({ children, role: propRole, userName: propName }: LayoutProps) {
   const navigate = useNavigate();
   const location = useLocation();
-  const { fullName, role: authRole, signOut } = useAuth();
 
-  // Derive display values from AuthContext
-  const role = authRole === 'admin' ? 'admin' : 'user';
-  const userName = fullName ?? 'User';
-  const userRole = role === 'admin' ? 'System Admin' : 'User';
+  // FIX: Ambil dari prop halaman, jika tidak ada cek riwayat navigasi (state router), baru ke localStorage
+  const activeRole = propRole || location.state?.currentRole || (localStorage.getItem('role') as 'admin' | 'user') || 'user';
+  const activeUserName = propName || localStorage.getItem('userName') || 'User';
 
-  const handleLogout = async () => {
-    await signOut();
+  const handleLogout = () => {
+    localStorage.clear();
     navigate('/login');
   };
 
-  // Menu Admin disesuaikan dengan desain screenshot terbaru
   const adminMenu = [
     { name: 'Dashboard', icon: LayoutDashboard, path: '/admin-dashboard' },
     { name: 'Room Management', icon: Building2, path: '/room-management' },
@@ -41,7 +38,7 @@ export default function DashboardLayout({ children }: LayoutProps) {
     { name: 'My Bookings', icon: Bookmark, path: '/my-bookings' },
   ];
 
-  const menu = role === 'admin' ? adminMenu : userMenu;
+  const menu = activeRole === 'admin' ? adminMenu : userMenu;
 
   return (
     <div className="flex h-screen bg-slate-50 font-sans">
@@ -49,20 +46,19 @@ export default function DashboardLayout({ children }: LayoutProps) {
       <aside className="w-64 bg-[#141C2F] text-slate-300 flex flex-col border-r border-slate-800">
         <div className="p-6 flex items-center gap-3">
           <div className="bg-[#0088FF] p-2 rounded-lg text-white">
-            {role === 'admin' ? <Building2 size={24} /> : <span className="font-bold text-lg px-1">P</span>}
+            {activeRole === 'admin' ? <Building2 size={24} /> : <span className="font-bold text-lg px-1">P</span>}
           </div>
           <div>
             <h1 className="text-white font-bold tracking-wider uppercase text-lg">Tekspace</h1>
             <p className="text-xs text-slate-400">
-              {role === 'admin' ? 'Corporate HQ' : 'Corporate Portal'}
+              {activeRole === 'admin' ? 'Corporate HQ' : 'Corporate Portal'}
             </p>
           </div>
         </div>
 
         <nav className="flex-1 mt-4">
           {menu.map((item) => {
-            // LOGIKA PENTING: Dashboard tetap aktif jika path-nya /activity-feed
-            const isActivityFeed = role === 'admin' && item.name === 'Dashboard' && location.pathname === '/activity-feed';
+            const isActivityFeed = activeRole === 'admin' && item.name === 'Dashboard' && location.pathname === '/activity-feed';
             const isActive = location.pathname === item.path || isActivityFeed;
             
             return (
@@ -83,7 +79,7 @@ export default function DashboardLayout({ children }: LayoutProps) {
         </nav>
 
         <div className="p-4 border-t border-slate-800/50">
-          {role === 'user' && (
+          {activeRole === 'user' && (
             <button className="w-full mb-4 bg-[#0088FF] text-white py-2 rounded-lg font-medium hover:bg-blue-600 transition flex items-center justify-center gap-2">
               <span className="text-lg">⊕</span> Book Now
             </button>
@@ -116,23 +112,25 @@ export default function DashboardLayout({ children }: LayoutProps) {
           
           <div className="flex items-center gap-6">
             <button 
-              onClick={() => navigate(role === 'admin' ? '/activity-feed' : '/user-activity')}
+              // FIX: Mengirim state router saat diklik
+              onClick={() => navigate(activeRole === 'admin' ? '/activity-feed' : '/user-activity', { state: { currentRole: activeRole } })}
               className={`transition-colors relative ${location.pathname === '/activity-feed' || location.pathname === '/user-activity' ? 'text-[#0088FF]' : 'text-slate-400 hover:text-slate-600'}`}
             >
               <Bell size={20} />
               <span className="absolute top-0 right-0 w-2 h-2 bg-rose-500 rounded-full border border-white"></span>
             </button>
             <button 
-              onClick={() => navigate('/help-center')}
+              // FIX: Mengirim state router saat diklik
+              onClick={() => navigate('/help-center', { state: { currentRole: activeRole } })}
               className={`transition-colors ${location.pathname === '/help-center' ? 'text-[#0088FF]' : 'text-slate-400 hover:text-slate-600'}`}
             >
               <HelpCircle size={20} />
             </button>
 
             <div className="flex items-center gap-3 border-l pl-6 border-slate-200">
-              <span className="text-sm font-bold text-slate-800">{userName}</span>
+              <span className="text-sm font-bold text-slate-800">{activeUserName}</span>
               <div className="w-10 h-10 rounded-full bg-slate-200 overflow-hidden border border-slate-200">
-                <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${userName}`} alt="avatar" />
+                <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${activeUserName}`} alt="avatar" />
               </div>
             </div>
           </div>
