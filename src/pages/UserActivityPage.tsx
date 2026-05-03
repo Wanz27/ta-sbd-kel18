@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import DashboardLayout from '../layout/DashboardLayout';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
-// FIX: ChevronDown sudah dihapus dari import ini
+
 import { CheckCircle2, RotateCw, XCircle, CalendarX2, Clock, Loader2 } from 'lucide-react';
 
 export default function UserActivityPage() {
@@ -19,7 +19,7 @@ export default function UserActivityPage() {
         const { data, error } = await supabase
           .from('activity_logs')
           .select('*')
-          .eq('actor', userName) // Filter khusus milik user ini
+          .eq('actor', userName)
           .order('created_at', { ascending: false });
 
         if (error) throw error;
