@@ -1,6 +1,6 @@
 import * as React from 'react'
 
-export type RoomType = 'Conference Room' | 'Meeting Room' | 'Classroom'
+export type RoomType = 'Computer Lab' | 'Laboratory' | 'Classroom'
 
 export type AddRoomValues = {
   roomName: string
@@ -18,17 +18,22 @@ export type AddRoomModalProps = {
   onSave?: (values: AddRoomValues) => void
 }
 
-const ROOM_TYPES: RoomType[] = ['Conference Room', 'Meeting Room', 'Classroom']
+const ROOM_TYPES: RoomType[] = [
+  'Computer Lab',
+  'Laboratory',
+  'Classroom',
+]
 
 const DEFAULT_RULES = ['No smoking', 'No food', 'Turn off lights after use']
 
 const DEFAULT_AMENITIES = [
-  '4K Display',
-  'VC System',
+  'Smart TV',
+  'Air Conditioning (AC)',
+  'Sound System',
+  'Power Outlet',
+  'Projector',
   'Whiteboard',
-  'Acoustics',
-  'Coffee Bar',
-  'Phone Hub',
+  
 ]
 
 type Errors = Partial<{
@@ -74,7 +79,7 @@ export default function AddRoomModal({ open, onClose, onSave }: AddRoomModalProp
   const [visible, setVisible] = React.useState(open)
 
   const [roomName, setRoomName] = React.useState('')
-  const [roomType, setRoomType] = React.useState<RoomType>('Conference Room')
+  const [roomType, setRoomType] = React.useState<RoomType>('Computer Lab')
   const [capacity, setCapacity] = React.useState<number | ''>('')
   const [location, setLocation] = React.useState('')
   const [roomRules, setRoomRules] = React.useState<string[]>([...DEFAULT_RULES])
