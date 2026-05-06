@@ -39,7 +39,8 @@ export type Reservation = {
   start_time: string;
   end_time: string;
   status: 'Pending' | 'Approved' | 'Rejected' | 'Cancelled';
-  purpose: string | null;
+  meeting_title: string | null;
+  person_in_charge: string | null;
   notes_from_admin: string | null;
   created_at: string;
   users: ReservationUser | null;
@@ -114,7 +115,8 @@ export const createReservation = (data: {
   room_id: string;
   start_time: string;
   end_time: string;
-  purpose?: string;
+  meeting_title: string;
+  person_in_charge: string;
 }) =>
   apiFetch<Reservation>('/reservations', {
     method: 'POST',

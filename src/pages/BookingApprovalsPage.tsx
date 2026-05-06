@@ -152,7 +152,10 @@ export default function BookingApprovalsPage() {
                       <div>{formatDateTime(req.start_time)}</div>
                       <div className="text-slate-400">s/d {formatDateTime(req.end_time)}</div>
                     </td>
-                    <td className="px-6 py-5 text-slate-600">{req.purpose ?? '-'}</td>
+                    <td className="px-6 py-5 text-slate-600">
+                      <div>{req.meeting_title ?? '-'}</div>
+                      {req.person_in_charge && <div className="text-xs text-slate-400 mt-0.5">PIC: {req.person_in_charge}</div>}
+                    </td>
                     <td className="px-6 py-5 text-right">
                       <div className="flex items-center justify-end gap-2">
                         <button

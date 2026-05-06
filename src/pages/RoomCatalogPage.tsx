@@ -10,7 +10,8 @@ const FALLBACK_IMG = 'https://images.unsplash.com/photo-1524758631624-e2822e304c
 function BookRoomModal({ room, userId, onClose }: { room: Room; userId: string; onClose: () => void }) {
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
-  const [purpose, setPurpose] = useState('');
+  const [meetingTitle, setMeetingTitle] = useState('');
+  const [personInCharge, setPersonInCharge] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -20,6 +21,8 @@ function BookRoomModal({ room, userId, onClose }: { room: Room; userId: string; 
     setError(null);
     if (!startTime || !endTime) { setError('Waktu mulai dan selesai wajib diisi.'); return; }
     if (new Date(endTime) <= new Date(startTime)) { setError('Waktu selesai harus setelah waktu mulai.'); return; }
+    if (!meetingTitle.trim()) { setError('Judul rapat wajib diisi.'); return; }
+    if (!personInCharge.trim()) { setError('Penanggung jawab wajib diisi.'); return; }
     setLoading(true);
     try {
       await api.createReservation({
@@ -27,7 +30,8 @@ function BookRoomModal({ room, userId, onClose }: { room: Room; userId: string; 
         room_id: room.room_id,
         start_time: new Date(startTime).toISOString(),
         end_time: new Date(endTime).toISOString(),
-        purpose,
+        meeting_title: meetingTitle.trim(),
+        person_in_charge: personInCharge.trim(),
       });
       setSuccess(true);
     } catch (err: any) {
@@ -65,9 +69,15 @@ function BookRoomModal({ room, userId, onClose }: { room: Room; userId: string; 
                   className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-[#0088FF] focus:ring-4 focus:ring-[#0088FF]/15" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Tujuan Penggunaan</label>
-                <textarea value={purpose} onChange={(e) => setPurpose(e.target.value)} rows={3}
-                  placeholder="e.g. Rapat tim, kuliah, seminar..."
+                <label className="block text-sm font-medium text-slate-700 mb-1">Judul Rapat / Kegiatan</label>
+                <input type="text" value={meetingTitle} onChange={(e) => setMeetingTitle(e.target.value)} required
+                  placeholder="e.g. Rapat Tim, Seminar, Kuliah..."
+                  className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-[#0088FF] focus:ring-4 focus:ring-[#0088FF]/15" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Penanggung Jawab</label>
+                <input type="text" value={personInCharge} onChange={(e) => setPersonInCharge(e.target.value)} required
+                  placeholder="Nama penanggung jawab kegiatan..."
                   className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-[#0088FF] focus:ring-4 focus:ring-[#0088FF]/15" />
               </div>
               {error && <p className="text-rose-600 text-sm bg-rose-50 border border-rose-200 rounded-lg px-3 py-2">{error}</p>}

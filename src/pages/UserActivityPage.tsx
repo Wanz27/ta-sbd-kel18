@@ -99,8 +99,8 @@ export default function UserActivityPage() {
                     </span>
                   </div>
                   <p className="text-[15px] text-slate-600 leading-relaxed">{desc}</p>
-                  {res.purpose && (
-                    <p className="text-sm text-slate-400 mt-1">Tujuan: {res.purpose}</p>
+                  {res.meeting_title && (
+                    <p className="text-sm text-slate-400 mt-1">Kegiatan: {res.meeting_title}</p>
                   )}
                   <div className="flex items-center gap-5 mt-4">
                     <div className="flex items-center gap-1.5 text-sm text-slate-400 font-medium">

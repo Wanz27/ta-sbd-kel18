@@ -93,7 +93,10 @@ export default function MyBookingsPage() {
                     <td className="py-4 px-6 font-bold text-slate-800">{booking.rooms?.room_name ?? '-'}</td>
                     <td className="py-4 px-6 text-slate-600 text-xs">{formatDateTime(booking.start_time)}</td>
                     <td className="py-4 px-6 text-slate-600 text-xs">{formatDateTime(booking.end_time)}</td>
-                    <td className="py-4 px-6 text-slate-600">{booking.purpose ?? '-'}</td>
+                    <td className="py-4 px-6 text-slate-600">
+                      <div>{booking.meeting_title ?? '-'}</div>
+                      {booking.person_in_charge && <div className="text-xs text-slate-400 mt-0.5">PIC: {booking.person_in_charge}</div>}
+                    </td>
                     <td className="py-4 px-6"><StatusBadge status={booking.status} /></td>
                     <td className="py-4 px-6">
                       {booking.status === 'Pending' && (

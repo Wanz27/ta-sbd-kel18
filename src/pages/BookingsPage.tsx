@@ -148,7 +148,10 @@ export default function BookingsPage() {
                         <p className="font-bold text-slate-900">{dt.date}</p>
                         <p className="text-xs text-slate-500 mt-0.5">{dt.time} – {dtEnd.time}</p>
                       </td>
-                      <td className="py-4 px-6 text-slate-600">{req.purpose ?? '-'}</td>
+                      <td className="py-4 px-6 text-slate-600">
+                        <div>{req.meeting_title ?? '-'}</div>
+                        {req.person_in_charge && <div className="text-xs text-slate-400 mt-0.5">PIC: {req.person_in_charge}</div>}
+                      </td>
                       <td className="py-4 px-6 text-right">
                         <div className="flex items-center justify-end gap-2">
                           <button onClick={() => handleReject(req.reservation_id, req.users?.full_name ?? '')}
