@@ -102,7 +102,16 @@ export type Amenity = { amenity_id: number; amenity_name: string };
 export type Rule = { rule_id: number; rule_name: string };
 
 export const getAmenities = () => apiFetch<Amenity[]>('/amenities');
+export const createAmenity = (amenity_name: string) =>
+  apiFetch<Amenity>('/amenities', { method: 'POST', body: JSON.stringify({ amenity_name }) });
+export const deleteAmenity = (id: number) =>
+  apiFetch<void>(`/amenities/${id}`, { method: 'DELETE' });
+
 export const getRules = () => apiFetch<Rule[]>('/rules');
+export const createRule = (rule_name: string) =>
+  apiFetch<Rule>('/rules', { method: 'POST', body: JSON.stringify({ rule_name }) });
+export const deleteRule = (id: number) =>
+  apiFetch<void>(`/rules/${id}`, { method: 'DELETE' });
 
 export const updateRoomAmenities = (
   roomId: number | string,

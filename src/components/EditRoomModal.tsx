@@ -1,7 +1,11 @@
 import * as React from 'react'
 import { Upload, X, Link, Loader2 } from 'lucide-react'
 import type { Room, Amenity, Rule } from '../lib/api'
-import { uploadRoomImage, getAmenities, getRules, getRoomById, updateRoomAmenities, updateRoomRules } from '../lib/api'
+import {
+  uploadRoomImage, getAmenities, createAmenity, deleteAmenity,
+  getRules, createRule, deleteRule,
+  getRoomById, updateRoomAmenities, updateRoomRules,
+} from '../lib/api'
 
 type EditRoomModalProps = {
   room: Room
@@ -37,6 +41,12 @@ export default function EditRoomModal({ room, onClose, onSave }: EditRoomModalPr
   const [selectedAmenities, setSelectedAmenities] = React.useState<Map<number, number>>(new Map())
   const [selectedRules, setSelectedRules] = React.useState<Set<number>>(new Set())
   const [loadingMeta, setLoadingMeta] = React.useState(true)
+
+  // Custom add inputs
+  const [newAmenityName, setNewAmenityName] = React.useState('')
+  const [addingAmenity, setAddingAmenity] = React.useState(false)
+  const [newRuleName, setNewRuleName] = React.useState('')
+  const [addingRule, setAddingRule] = React.useState(false)
 
   // Submit
   const [saving, setSaving] = React.useState(false)
@@ -108,6 +118,60 @@ export default function EditRoomModal({ room, onClose, onSave }: EditRoomModalPr
       else next.add(id)
       return next
     })
+  }
+
+  async function handleAddAmenity() {
+    const name = newAmenityName.trim()
+    if (!name) return
+    setAddingAmenity(true)
+    try {
+      const created = await createAmenity(name)
+      setAllAmenities((prev) => [...prev, created].sort((a, b) => a.amenity_name.localeCompare(b.amenity_name)))
+      setSelectedAmenities((prev) => new Map(prev).set(created.amenity_id, 1))
+      setNewAmenityName('')
+    } catch (err: any) {
+      setError('Gagal tambah fasilitas: ' + err.message)
+    } finally {
+      setAddingAmenity(false)
+    }
+  }
+
+  async function handleDeleteAmenity(id: number) {
+    if (!window.confirm('Hapus fasilitas ini? Akan dihapus dari semua ruangan.')) return
+    try {
+      await deleteAmenity(id)
+      setAllAmenities((prev) => prev.filter((a) => a.amenity_id !== id))
+      setSelectedAmenities((prev) => { const n = new Map(prev); n.delete(id); return n })
+    } catch (err: any) {
+      setError('Gagal hapus fasilitas: ' + err.message)
+    }
+  }
+
+  async function handleAddRule() {
+    const name = newRuleName.trim()
+    if (!name) return
+    setAddingRule(true)
+    try {
+      const created = await createRule(name)
+      setAllRules((prev) => [...prev, created].sort((a, b) => a.rule_name.localeCompare(b.rule_name)))
+      setSelectedRules((prev) => new Set(prev).add(created.rule_id))
+      setNewRuleName('')
+    } catch (err: any) {
+      setError('Gagal tambah peraturan: ' + err.message)
+    } finally {
+      setAddingRule(false)
+    }
+  }
+
+  async function handleDeleteRule(id: number) {
+    if (!window.confirm('Hapus peraturan ini? Akan dihapus dari semua ruangan.')) return
+    try {
+      await deleteRule(id)
+      setAllRules((prev) => prev.filter((r) => r.rule_id !== id))
+      setSelectedRules((prev) => { const n = new Set(prev); n.delete(id); return n })
+    } catch (err: any) {
+      setError('Gagal hapus peraturan: ' + err.message)
+    }
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -275,54 +339,92 @@ export default function EditRoomModal({ room, onClose, onSave }: EditRoomModalPr
                 {/* Amenities */}
                 <div>
                   <h3 className="text-sm font-bold text-slate-700 mb-3">Fasilitas (Amenities)</h3>
-                  {allAmenities.length === 0 ? (
-                    <p className="text-xs text-slate-400 italic">Belum ada data amenities di database.</p>
-                  ) : (
-                    <div className="space-y-2 max-h-52 overflow-y-auto pr-1">
-                      {allAmenities.map((a) => {
-                        const checked = selectedAmenities.has(a.amenity_id)
-                        const qty = selectedAmenities.get(a.amenity_id) ?? 1
-                        return (
-                          <div key={a.amenity_id} className="flex items-center gap-3 rounded-lg border border-slate-100 bg-slate-50 px-3 py-2">
-                            <input type="checkbox" checked={checked}
-                              onChange={() => toggleAmenity(a.amenity_id)}
-                              className="h-4 w-4 rounded border-slate-300 text-sky-700 focus:ring-sky-700/20"
-                            />
-                            <span className="flex-1 text-sm text-slate-700">{a.amenity_name}</span>
-                            {checked && (
-                              <div className="flex items-center gap-1">
-                                <span className="text-xs text-slate-400">Qty:</span>
-                                <input type="number" min={1} value={qty}
-                                  onChange={(e) => setQuantity(a.amenity_id, Number(e.target.value))}
-                                  className="w-14 h-7 rounded border border-slate-200 px-2 text-xs text-center focus:outline-none focus:border-sky-600"
-                                />
-                              </div>
-                            )}
-                          </div>
-                        )
-                      })}
-                    </div>
-                  )}
+                  <div className="space-y-2 max-h-48 overflow-y-auto pr-1 mb-3">
+                    {allAmenities.length === 0 ? (
+                      <p className="text-xs text-slate-400 italic">Belum ada fasilitas. Tambahkan di bawah.</p>
+                    ) : allAmenities.map((a) => {
+                      const checked = selectedAmenities.has(a.amenity_id)
+                      const qty = selectedAmenities.get(a.amenity_id) ?? 1
+                      return (
+                        <div key={a.amenity_id} className="flex items-center gap-2 rounded-lg border border-slate-100 bg-slate-50 px-3 py-2">
+                          <input type="checkbox" checked={checked}
+                            onChange={() => toggleAmenity(a.amenity_id)}
+                            className="h-4 w-4 rounded border-slate-300 text-sky-700 focus:ring-sky-700/20 shrink-0"
+                          />
+                          <span className="flex-1 text-sm text-slate-700 truncate">{a.amenity_name}</span>
+                          {checked && (
+                            <div className="flex items-center gap-1 shrink-0">
+                              <span className="text-xs text-slate-400">Qty:</span>
+                              <input type="number" min={1} value={qty}
+                                onChange={(e) => setQuantity(a.amenity_id, Number(e.target.value))}
+                                className="w-12 h-7 rounded border border-slate-200 px-1 text-xs text-center focus:outline-none focus:border-sky-600"
+                              />
+                            </div>
+                          )}
+                          <button type="button" onClick={() => handleDeleteAmenity(a.amenity_id)}
+                            className="shrink-0 text-slate-300 hover:text-rose-500 transition"
+                            title="Hapus fasilitas"
+                          >
+                            <X size={14} />
+                          </button>
+                        </div>
+                      )
+                    })}
+                  </div>
+                  {/* Add new amenity */}
+                  <div className="flex gap-2">
+                    <input
+                      value={newAmenityName}
+                      onChange={(e) => setNewAmenityName(e.target.value)}
+                      onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddAmenity() } }}
+                      placeholder="Tambah fasilitas baru..."
+                      className="flex-1 h-9 rounded-lg border border-dashed border-slate-300 px-3 text-sm focus:outline-none focus:border-sky-600 focus:ring-2 focus:ring-sky-600/15 placeholder:text-slate-400"
+                    />
+                    <button type="button" onClick={handleAddAmenity} disabled={!newAmenityName.trim() || addingAmenity}
+                      className="h-9 px-3 rounded-lg bg-sky-700 text-white text-xs font-bold hover:bg-sky-800 transition disabled:bg-slate-200 disabled:text-slate-400"
+                    >
+                      {addingAmenity ? '...' : '+ Tambah'}
+                    </button>
+                  </div>
                 </div>
 
                 {/* Rules */}
                 <div>
                   <h3 className="text-sm font-bold text-slate-700 mb-3">Peraturan (Rules)</h3>
-                  {allRules.length === 0 ? (
-                    <p className="text-xs text-slate-400 italic">Belum ada data rules di database.</p>
-                  ) : (
-                    <div className="space-y-2 max-h-52 overflow-y-auto pr-1">
-                      {allRules.map((r) => (
-                        <label key={r.rule_id} className="flex items-center gap-3 rounded-lg border border-slate-100 bg-slate-50 px-3 py-2 cursor-pointer">
-                          <input type="checkbox" checked={selectedRules.has(r.rule_id)}
-                            onChange={() => toggleRule(r.rule_id)}
-                            className="h-4 w-4 rounded border-slate-300 text-sky-700 focus:ring-sky-700/20"
-                          />
-                          <span className="text-sm text-slate-700">{r.rule_name}</span>
-                        </label>
-                      ))}
-                    </div>
-                  )}
+                  <div className="space-y-2 max-h-48 overflow-y-auto pr-1 mb-3">
+                    {allRules.length === 0 ? (
+                      <p className="text-xs text-slate-400 italic">Belum ada peraturan. Tambahkan di bawah.</p>
+                    ) : allRules.map((r) => (
+                      <div key={r.rule_id} className="flex items-center gap-2 rounded-lg border border-slate-100 bg-slate-50 px-3 py-2">
+                        <input type="checkbox" checked={selectedRules.has(r.rule_id)}
+                          onChange={() => toggleRule(r.rule_id)}
+                          className="h-4 w-4 rounded border-slate-300 text-sky-700 focus:ring-sky-700/20 shrink-0"
+                        />
+                        <span className="flex-1 text-sm text-slate-700">{r.rule_name}</span>
+                        <button type="button" onClick={() => handleDeleteRule(r.rule_id)}
+                          className="shrink-0 text-slate-300 hover:text-rose-500 transition"
+                          title="Hapus peraturan"
+                        >
+                          <X size={14} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                  {/* Add new rule */}
+                  <div className="flex gap-2">
+                    <input
+                      value={newRuleName}
+                      onChange={(e) => setNewRuleName(e.target.value)}
+                      onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddRule() } }}
+                      placeholder="Tambah peraturan baru..."
+                      className="flex-1 h-9 rounded-lg border border-dashed border-slate-300 px-3 text-sm focus:outline-none focus:border-sky-600 focus:ring-2 focus:ring-sky-600/15 placeholder:text-slate-400"
+                    />
+                    <button type="button" onClick={handleAddRule} disabled={!newRuleName.trim() || addingRule}
+                      className="h-9 px-3 rounded-lg bg-sky-700 text-white text-xs font-bold hover:bg-sky-800 transition disabled:bg-slate-200 disabled:text-slate-400"
+                    >
+                      {addingRule ? '...' : '+ Tambah'}
+                    </button>
+                  </div>
                 </div>
               </div>
             )}
