@@ -39,9 +39,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   })
 
   function normalizeRole(raw: unknown): AppRole | null {
-    if (raw === 'admin') return 'admin'
-    if (raw === 'user') return 'user'
-    if (raw === 'mahasiswa' || raw === 'student') return 'user'
+    if (typeof raw !== 'string') return null
+    const normalized = raw.toLowerCase()
+    
+    if (normalized === 'admin' || normalized === 'system admin') return 'admin'
+    if (normalized === 'user' || normalized === 'mahasiswa' || normalized === 'student') return 'user'
     return null
   }
 
