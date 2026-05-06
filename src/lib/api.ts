@@ -96,6 +96,29 @@ async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
   return json.data as T;
 }
 
+// ─── Amenities & Rules ────────────────────────────────────────────────────────
+
+export type Amenity = { amenity_id: number; amenity_name: string };
+export type Rule = { rule_id: number; rule_name: string };
+
+export const getAmenities = () => apiFetch<Amenity[]>('/amenities');
+export const getRules = () => apiFetch<Rule[]>('/rules');
+
+export const updateRoomAmenities = (
+  roomId: number | string,
+  amenity_ids: { amenity_id: number; quantity: number }[],
+) =>
+  apiFetch<void>(`/rooms/${roomId}/amenities`, {
+    method: 'PUT',
+    body: JSON.stringify({ amenity_ids }),
+  });
+
+export const updateRoomRules = (roomId: number | string, rule_ids: number[]) =>
+  apiFetch<void>(`/rooms/${roomId}/rules`, {
+    method: 'PUT',
+    body: JSON.stringify({ rule_ids }),
+  });
+
 // ─── Upload ───────────────────────────────────────────────────────────────────
 
 export const uploadRoomImage = async (file: File): Promise<string> => {
