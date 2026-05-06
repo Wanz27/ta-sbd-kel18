@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { Upload, X, Link, Loader2 } from 'lucide-react'
 import type { Room, Amenity, Rule } from '../lib/api'
-import { uploadRoomImage, getAmenities, getRules, updateRoomAmenities, updateRoomRules } from '../lib/api'
+import { uploadRoomImage, getAmenities, getRules, getRoomById, updateRoomAmenities, updateRoomRules } from '../lib/api'
 
 type EditRoomModalProps = {
   room: Room
@@ -46,20 +46,20 @@ export default function EditRoomModal({ room, onClose, onSave }: EditRoomModalPr
     setPreviewSrc(imageMode === 'url' ? (imageUrl.trim() || FALLBACK) : previewSrc)
   }, [imageUrl, imageMode])
 
-  // Fetch amenities, rules, and existing room data
+  // Fetch full room detail (with amenities/rules) + all available amenities/rules
   React.useEffect(() => {
-    Promise.all([getAmenities(), getRules()])
-      .then(([amenities, rules]) => {
+    Promise.all([getAmenities(), getRules(), getRoomById(room.room_id)])
+      .then(([amenities, rules, fullRoom]) => {
         setAllAmenities(amenities)
         setAllRules(rules)
-        // Pre-select from room data
+        // Pre-select from full room data (includes joins)
         const aMap = new Map<number, number>()
-        room.room_amenities_map?.forEach((a) => {
+        fullRoom.room_amenities_map?.forEach((a) => {
           aMap.set(a.amenities.amenity_id, a.quantity)
         })
         setSelectedAmenities(aMap)
         const rSet = new Set<number>()
-        room.room_rules_map?.forEach((r) => {
+        fullRoom.room_rules_map?.forEach((r) => {
           rSet.add(r.rules.rule_id)
         })
         setSelectedRules(rSet)
