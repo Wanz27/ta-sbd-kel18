@@ -27,11 +27,11 @@ function StatusBadge({ status }: { status: string }) {
 export default function MyBookingsPage() {
   const auth = useAuth() as any;
   const userName = auth?.fullName || localStorage.getItem('userName') || 'User';
-  const userId = auth?.dbUserId as number | undefined;
+  const userId = auth?.user?.user_id as number | undefined;
 
   const [myBookings, setMyBookings] = useState<Reservation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [cancelLoading, setCancelLoading] = useState<string | null>(null);
+  const [cancelLoading, setCancelLoading] = useState<number | null>(null);
 
   useEffect(() => {
     if (!userId) return;
@@ -49,7 +49,7 @@ export default function MyBookingsPage() {
     fetchMyBookings();
   }, [userId]);
 
-  const handleCancel = async (id: string) => {
+  const handleCancel = async (id: number) => {
     if (!window.confirm('Batalkan booking ini?')) return;
     setCancelLoading(id);
     try {

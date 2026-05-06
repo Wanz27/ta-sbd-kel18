@@ -7,7 +7,7 @@ import type { Room } from '../lib/api';
 
 const FALLBACK_IMG = 'https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&w=800&q=80';
 
-function BookRoomModal({ room, userId, onClose }: { room: Room; userId: number; onClose: () => void }) {
+function BookRoomModal({ room, userId, onClose }: { room: Room; userId: number | null | undefined; onClose: () => void }) {
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
   const [meetingTitle, setMeetingTitle] = useState('');
@@ -19,6 +19,7 @@ function BookRoomModal({ room, userId, onClose }: { room: Room; userId: number; 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    if (!userId) { setError('Sesi pengguna tidak valid. Silakan logout dan login kembali.'); return; }
     if (!startTime || !endTime) { setError('Waktu mulai dan selesai wajib diisi.'); return; }
     if (new Date(endTime) <= new Date(startTime)) { setError('Waktu selesai harus setelah waktu mulai.'); return; }
     if (!meetingTitle.trim()) { setError('Judul rapat wajib diisi.'); return; }
@@ -96,7 +97,7 @@ function BookRoomModal({ room, userId, onClose }: { room: Room; userId: number; 
 export default function RoomCatalogPage() {
   const auth = useAuth() as any;
   const userName = auth?.fullName || localStorage.getItem('userName') || 'User';
-  const userId = auth?.dbUserId as number | undefined;
+  const userId = auth?.user?.user_id as number | undefined;
 
   const [rooms, setRooms] = useState<Room[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -142,7 +143,7 @@ export default function RoomCatalogPage() {
           </div>
         </div>
 
-        {bookingRoom && userId && (
+        {bookingRoom && (
           <BookRoomModal room={bookingRoom} userId={userId} onClose={() => setBookingRoom(null)} />
         )}
 

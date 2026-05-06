@@ -1,10 +1,19 @@
-// Centralized API service — semua panggilan backend lewat sini
 const API_BASE = 'https://ta-backend-one.vercel.app/api';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
+export type AppRole = 'admin' | 'user';
+
+export type AuthUser = {
+  user_id: number;
+  email: string;
+  role: AppRole;
+  full_name: string;
+  department: string | null;
+};
+
 export type Room = {
-  room_id: string;
+  room_id: number;
   room_name: string;
   room_type: string | null;
   location: string | null;
@@ -17,25 +26,25 @@ export type Room = {
 };
 
 export type ReservationUser = {
-  user_id: string;
+  user_id: number;
   full_name: string;
   email: string;
-  department: string;
+  department: string | null;
 };
 
 export type ReservationRoom = {
-  room_id: string;
+  room_id: number;
   room_name: string;
-  room_type: string;
-  location: string;
+  room_type: string | null;
+  location: string | null;
   capacity: number;
 };
 
 export type Reservation = {
-  reservation_id: string;
+  reservation_id: number;
   booking_code: string;
-  user_id: string;
-  room_id: string;
+  user_id: number;
+  room_id: number;
   start_time: string;
   end_time: string;
   status: 'Pending' | 'Approved' | 'Rejected' | 'Cancelled';
@@ -49,15 +58,23 @@ export type Reservation = {
 
 export type ReservationFilters = {
   status?: string;
-  user_id?: number | string;
-  room_id?: number | string;
+  user_id?: number;
+  room_id?: number;
 };
 
 // ─── Internal fetch helper ────────────────────────────────────────────────────
 
+function getToken(): string | null {
+  return localStorage.getItem('token');
+}
+
 async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
+  const token = getToken();
   const res = await fetch(`${API_BASE}${path}`, {
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
     ...options,
   });
   const json = await res.json();
@@ -67,11 +84,30 @@ async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
   return json.data as T;
 }
 
+// ─── Auth ─────────────────────────────────────────────────────────────────────
+
+export const loginApi = (email: string, password: string) =>
+  apiFetch<{ token: string; user: AuthUser }>('/auth/login', {
+    method: 'POST',
+    body: JSON.stringify({ email, password }),
+  });
+
+export const registerApi = (data: {
+  full_name: string;
+  email: string;
+  password: string;
+  department?: string;
+}) =>
+  apiFetch<{ token: string; user: AuthUser }>('/auth/register', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+
 // ─── Rooms ────────────────────────────────────────────────────────────────────
 
 export const getRooms = () => apiFetch<Room[]>('/rooms');
 
-export const getRoomById = (id: string) => apiFetch<Room>(`/rooms/${id}`);
+export const getRoomById = (id: number | string) => apiFetch<Room>(`/rooms/${id}`);
 
 export const createRoom = (data: {
   room_name: string;
@@ -81,38 +117,38 @@ export const createRoom = (data: {
   status?: string;
 }) => apiFetch<Room>('/rooms', { method: 'POST', body: JSON.stringify(data) });
 
-export const updateRoom = (id: string, data: Partial<Room>) =>
+export const updateRoom = (id: number | string, data: Partial<Room>) =>
   apiFetch<Room>(`/rooms/${id}`, { method: 'PUT', body: JSON.stringify(data) });
 
-export const deleteRoom = (id: string) =>
+export const deleteRoom = (id: number | string) =>
   apiFetch<void>(`/rooms/${id}`, { method: 'DELETE' });
 
-export const archiveRoom = (id: string, reason: string) =>
+export const archiveRoom = (id: number | string, reason: string) =>
   apiFetch<Room>(`/rooms/${id}/archive`, {
     method: 'PATCH',
     body: JSON.stringify({ reason }),
   });
 
-export const unarchiveRoom = (id: string) =>
+export const unarchiveRoom = (id: number | string) =>
   apiFetch<Room>(`/rooms/${id}/unarchive`, { method: 'PATCH' });
 
 // ─── Reservations ─────────────────────────────────────────────────────────────
 
 export const getReservations = (filters?: ReservationFilters) => {
   const params = new URLSearchParams();
-  if (filters?.status) params.set('status', String(filters.status));
+  if (filters?.status) params.set('status', filters.status);
   if (filters?.user_id != null) params.set('user_id', String(filters.user_id));
   if (filters?.room_id != null) params.set('room_id', String(filters.room_id));
   const qs = params.toString() ? `?${params}` : '';
   return apiFetch<Reservation[]>(`/reservations${qs}`);
 };
 
-export const getReservationById = (id: string) =>
+export const getReservationById = (id: number | string) =>
   apiFetch<Reservation>(`/reservations/${id}`);
 
 export const createReservation = (data: {
   user_id: number;
-  room_id: number | string;
+  room_id: number;
   start_time: string;
   end_time: string;
   meeting_title: string;
@@ -124,7 +160,7 @@ export const createReservation = (data: {
   });
 
 export const updateReservationStatus = (
-  id: string,
+  id: number | string,
   status: string,
   notes_from_admin?: string,
 ) =>
@@ -133,8 +169,8 @@ export const updateReservationStatus = (
     body: JSON.stringify({ status, notes_from_admin }),
   });
 
-export const cancelReservation = (id: string) =>
+export const cancelReservation = (id: number | string) =>
   apiFetch<Reservation>(`/reservations/${id}/cancel`, { method: 'PATCH' });
 
-export const deleteReservation = (id: string) =>
+export const deleteReservation = (id: number | string) =>
   apiFetch<void>(`/reservations/${id}`, { method: 'DELETE' });
