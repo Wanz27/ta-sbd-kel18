@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import TextField from '../components/TextField'
-import { registerApi } from '../lib/api'
+import { registerApi, checkNimApi } from '../lib/api'
 
 type FieldKey = 'fullName' | 'nid' | 'email' | 'password' | 'confirmPassword'
 
@@ -121,7 +121,35 @@ export default function RegisterPage() {
   const [apiError, setApiError] = React.useState<string | null>(null)
   const [success, setSuccess] = React.useState(false)
 
-  const errors = React.useMemo(() => validate(values), [values])
+  const [nimExists, setNimExists] = React.useState(false)
+  const [checkingNim, setCheckingNim] = React.useState(false)
+
+  // Live Check NIM/NIP
+  React.useEffect(() => {
+    const nim = values.nid.trim()
+    if (nim.length < 5) {
+      setNimExists(false)
+      return
+    }
+
+    const checkNim = async () => {
+      setCheckingNim(true)
+      try {
+        const { exists } = await checkNimApi(nim)
+        setNimExists(exists)
+      } catch (err) {
+        // ignore errors
+        setNimExists(false)
+      } finally {
+        setCheckingNim(false)
+      }
+    }
+
+    const timeoutId = setTimeout(checkNim, 600) // debounce 600ms
+    return () => clearTimeout(timeoutId)
+  }, [values.nid])
+
+  const errors = React.useMemo(() => validate(values, nimExists), [values, nimExists])
   const canSubmit = Object.keys(errors).length === 0
 
   function onBlur(key: FieldKey) {
@@ -223,8 +251,8 @@ export default function RegisterPage() {
                 autoComplete="off"
                 inputMode="numeric"
                 required
-                status={fieldStatus('nid', touched, errors, values)}
-                message={touched.nid ? errors.nid : undefined}
+                status={fieldStatus('nid', touched, errors, values, checkingNim)}
+                message={touched.nid ? errors.nid : checkingNim ? 'Mengecek ketersediaan...' : undefined}
                 leftIcon={
                   <svg
                     viewBox="0 0 24 24"
@@ -326,19 +354,19 @@ export default function RegisterPage() {
               />
 
               {success ? (
-                <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
-                  ✅ Registrasi berhasil! Silakan cek email untuk verifikasi. Mengalihkan ke halaman login...
+                <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800 shadow-sm flex items-center gap-3">
+                  <span className="text-xl">✅</span> Registrasi berhasil! Mengalihkan ke halaman login...
                 </div>
               ) : null}
 
               {apiError ? (
-                <div className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
-                  {apiError}
+                <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800 shadow-sm flex items-center gap-3">
+                  <span className="text-xl">❌</span> {apiError}
                 </div>
               ) : null}
 
               {submitted && !canSubmit && !apiError ? (
-                <div className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
+                <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800 shadow-sm">
                   Periksa kembali input yang masih bermasalah.
                 </div>
               ) : null}
@@ -346,18 +374,18 @@ export default function RegisterPage() {
               <button
                 type="submit"
                 disabled={loading || success}
-                className="mt-2 h-11 w-full rounded-md bg-sky-800 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-900 focus:outline-none focus:ring-4 focus:ring-sky-600/20 disabled:cursor-not-allowed disabled:bg-slate-300"
+                className="mt-6 h-12 w-full rounded-xl bg-gradient-to-r from-sky-700 to-sky-900 text-sm font-bold tracking-wide text-white shadow-[0_8px_20px_rgba(3,105,161,0.3)] transition-all hover:-translate-y-0.5 hover:shadow-[0_12px_25px_rgba(3,105,161,0.4)] focus:outline-none focus:ring-4 focus:ring-sky-600/30 disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:translate-y-0"
               >
-                {loading ? 'Mendaftarkan...' : success ? 'Berhasil ✓' : 'Register'}
+                {loading ? 'Memproses...' : success ? 'Berhasil ✓' : 'Register Account'}
               </button>
 
-              <p className="pt-5 text-center text-sm text-slate-600">
+              <p className="pt-6 text-center text-sm font-medium text-slate-600">
                 Already have an account?{' '}
                 <Link
                   to="/login"
-                  className="font-semibold text-sky-700 underline-offset-4 hover:underline focus:outline-none focus:ring-4 focus:ring-sky-600/15"
+                  className="font-bold text-sky-700 hover:text-sky-900 hover:underline underline-offset-4 focus:outline-none focus:ring-4 focus:ring-sky-600/15 transition-colors"
                 >
-                  Login
+                  Sign in instead
                 </Link>
               </p>
             </form>
