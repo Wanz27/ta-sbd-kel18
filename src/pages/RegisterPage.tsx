@@ -138,7 +138,7 @@ export default function RegisterPage() {
         const { exists } = await checkNimApi(nim)
         setNimExists(exists)
       } catch (err) {
-        // ignore errors
+        console.error('Error saat cek NIM ke backend (Mungkin Vercel belum update):', err)
         setNimExists(false)
       } finally {
         setCheckingNim(false)
