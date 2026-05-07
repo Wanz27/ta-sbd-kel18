@@ -35,7 +35,7 @@ export default function AdminDashboard() {
       <div className="p-8 max-w-7xl mx-auto">
         <div className="mb-8">
           <h1 className="text-[32px] font-bold text-slate-900 mb-2">Dashboard Overview</h1>
-          <p className="text-slate-500 text-[15px]">Monitoring real-time operational capacity and pending actions.</p>
+          <p className="text-slate-500 text-[15px]">Pantau kapasitas operasional secara real-time dan tindakan yang tertunda.</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
