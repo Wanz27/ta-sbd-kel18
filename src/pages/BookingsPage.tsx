@@ -21,7 +21,7 @@ export default function BookingsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<number | null>(null);
   const [rejectTarget, setRejectTarget] = useState<{ id: number; userName: string } | null>(null);
-  const [toastMessage, setToastMessage] = useState<{title: string, type: 'success' | 'error'} | null>(null);
+  const [toastMessage, setToastMessage] = useState<{ title: string, type: 'success' | 'error' } | null>(null);
   const [isToastVisible, setIsToastVisible] = useState(false);
 
   const showToast = (title: string, type: 'success' | 'error') => {
@@ -29,7 +29,7 @@ export default function BookingsPage() {
     setIsToastVisible(true);
     setTimeout(() => {
       setIsToastVisible(false);
-      setTimeout(() => setToastMessage(null), 300); // wait for fade out
+      setTimeout(() => setToastMessage(null), 300);
     }, 3000);
   };
 
@@ -83,9 +83,8 @@ export default function BookingsPage() {
   return (
     <DashboardLayout role="admin" userName={adminName}>
       {toastMessage && (
-        <div className={`fixed top-8 right-8 px-6 py-4 rounded-xl shadow-2xl font-medium flex items-center gap-3 z-50 transition-all duration-300 transform ${
-          isToastVisible ? 'translate-y-0 opacity-100' : '-translate-y-4 opacity-0'
-        } ${toastMessage.type === 'success' ? 'bg-emerald-500 text-white' : 'bg-rose-500 text-white'}`}>
+        <div className={`fixed top-8 right-8 px-6 py-4 rounded-xl shadow-2xl font-medium flex items-center gap-3 z-50 transition-all duration-300 transform ${isToastVisible ? 'translate-y-0 opacity-100' : '-translate-y-4 opacity-0'
+          } ${toastMessage.type === 'success' ? 'bg-emerald-500 text-white' : 'bg-rose-500 text-white'}`}>
           {toastMessage.type === 'success' ? <Check size={20} /> : <X size={20} />}
           {toastMessage.title}
         </div>
